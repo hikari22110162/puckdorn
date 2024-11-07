@@ -8,19 +8,19 @@
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
-const int CROSSHAIR_SIZE = 15;  // Half-length of each crosshair line
-const int DUCK_WIDTH = 60;      // Duck width (adjust based on image)
-const int DUCK_HEIGHT = 60;     // Duck height (adjust based on image)
-const float BASE_SPEED = 3.0f;  // Base speed of the duck
-const float FALL_SPEED = 5.0f;  // Speed at which the duck falls when hit
-const int GROUND_LEVEL_Y = SCREEN_HEIGHT - 150; // "Ground level" where the duck appears to emerge from
+const int CROSSHAIR_SIZE = 15;  // độ dài crosshair 
+const int DUCK_WIDTH = 60;      // chiều rộng của con vịt 
+const int DUCK_HEIGHT = 60;     // chiều rộng của con vịt
+const float BASE_SPEED = 3.0f;  // tốc độ đi của con vịt
+const float FALL_SPEED = 5.0f;  // tốc độ vịt rơi khi bị bắn 
+const int GROUND_LEVEL_Y = SCREEN_HEIGHT - 150; // nơi mà con vịt được spawn ra theo cột y 2D game có nghĩa là chỉ có x,y
 
 enum DuckState {
     FLYING,
     FALLING
 };
 
-// Function to load an image as a texture
+// load image fucntion r
 SDL_Texture* loadTexture(const std::string &path, SDL_Renderer *renderer) {
     SDL_Texture* newTexture = IMG_LoadTexture(renderer, path.c_str());
     if (newTexture == nullptr) {
@@ -31,23 +31,23 @@ SDL_Texture* loadTexture(const std::string &path, SDL_Renderer *renderer) {
 
 // Function to set the target for the duck to move through the center first, then to a corner
 void setDuckTargets(SDL_Rect &duckRect, float &duckSpeedX, float &duckSpeedY, SDL_Point &centerTarget, SDL_Point &finalTarget, float speedMultiplier, bool &spawnedFromSky) {
-    if (rand() % 2 == 0) { // Randomly decide spawn location
-        // Spawn from the sky (top of the screen)
-        duckRect.x = rand() % (SCREEN_WIDTH - DUCK_WIDTH); // Random horizontal position
-        duckRect.y = 0 - DUCK_HEIGHT; // Just above the screen
+    if (rand() % 2 == 0) { // random vị trí spawn 
+        // spawn ở trên xuống từ trên màn hình 
+        duckRect.x = rand() % (SCREEN_WIDTH - DUCK_WIDTH); // vị trí nằm ngang ngẫu nhiên 
+        duckRect.y = 0 - DUCK_HEIGHT; // cho nó spawn trên không 
         centerTarget = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
-        finalTarget = (rand() % 2 == 0) ? SDL_Point{SCREEN_WIDTH, SCREEN_HEIGHT} : SDL_Point{0, SCREEN_HEIGHT}; // Bottom corners
+        finalTarget = (rand() % 2 == 0) ? SDL_Point{SCREEN_WIDTH, SCREEN_HEIGHT} : SDL_Point{0, SCREEN_HEIGHT}; // đây là các góc dưới của màn hình 
         spawnedFromSky = true;
     } else {
-        // Spawn from below the "ground level" (bottom part of the screen)
-        duckRect.x = rand() % (SCREEN_WIDTH - DUCK_WIDTH); // Random horizontal position
-        duckRect.y = GROUND_LEVEL_Y + DUCK_HEIGHT; // Just below the ground level
-        centerTarget = { SCREEN_WIDTH / 2, GROUND_LEVEL_Y - 100 }; // Fly up towards a point above ground level
-        finalTarget = (rand() % 2 == 0) ? SDL_Point{SCREEN_WIDTH, GROUND_LEVEL_Y - 100} : SDL_Point{0, GROUND_LEVEL_Y - 100}; // Move left or right above ground level
+        // spawn ở dưới màn hình
+        duckRect.x = rand() % (SCREEN_WIDTH - DUCK_WIDTH); // giống như phần spwan ở trên 
+        duckRect.y = GROUND_LEVEL_Y + DUCK_HEIGHT; // phần chắc chắn spawn ở dưới 
+        centerTarget = { SCREEN_WIDTH / 2, GROUND_LEVEL_Y - 100 }; // cho con vịt bay lên trời 
+        finalTarget = (rand() % 2 == 0) ? SDL_Point{SCREEN_WIDTH, GROUND_LEVEL_Y - 100} : SDL_Point{0, GROUND_LEVEL_Y - 100}; // đi trái hoặc phải lên không trung 
         spawnedFromSky = false;
     }
 
-    // Set initial speed towards the center, scaled by the speed multiplier
+    // khởi tạo tốc độ ban đầu của con vịt hướng tới trung tâm, được cân bằng bởi hệ số nhân của tốc độ.
     int dx = centerTarget.x - duckRect.x;
     int dy = centerTarget.y - duckRect.y;
     float distance = sqrt(dx * dx + dy * dy);
@@ -59,13 +59,13 @@ int main(int argc, char* args[]) {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
 
-    // Initialize SDL
+    // khởi tạo sdl
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << "\n";
         return 1;
     }
 
-    // Initialize SDL_image for PNG/JPG loading
+    // khởi tạo sdl.image dùng cho load các file có đuôi là jpg hay là png
     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
         std::cerr << "SDL_image could not initialize! SDL_image Error: " << IMG_GetError() << "\n";
         SDL_Quit();
@@ -81,10 +81,10 @@ int main(int argc, char* args[]) {
         return 1;
     }
 
-    // Hide the default system cursor
+    // ẩn con trỏ chuột 
     SDL_ShowCursor(SDL_DISABLE);
 
-    // Load textures for duck and background
+    // dùng để gọi các tài nguyên bằng cách dùng path để chỉ dẫn tới các file 
     SDL_Texture* duckTextureSky = loadTexture("C:/Users/bebiu/Desktop/Prj/duck_in_sky.png", renderer);
     SDL_Texture* duckTextureGround = loadTexture("C:/Users/bebiu/Desktop/Prj/duck_in_ground.png", renderer);
     SDL_Texture* duckFallTexture = loadTexture("C:/Users/bebiu/Desktop/Prj/duck_fall.png", renderer); // Falling duck texture
@@ -99,17 +99,17 @@ int main(int argc, char* args[]) {
         return 1;
     }
 
-    // Set up the duck position and movement
+    // cái này dùng để set up vị trí và tốc độ cho nó(vịt)
     SDL_Rect duckRect = {0, 0, DUCK_WIDTH, DUCK_HEIGHT};
     float duckSpeedX, duckSpeedY;
     SDL_Point centerTarget, finalTarget;
-    bool headingToCenter = true; // Indicates if the duck is currently heading to the center target
-    bool spawnedFromSky;         // True if the duck spawned from the sky, false if from ground
-    DuckState duckState = FLYING; // Duck starts in flying state
+    bool headingToCenter = true; // cho biết con vịt có hướng đến trung tâm hay không 
+    bool spawnedFromSky;         // trường hợp này nó sẽ đúng khi con vịt được spawn từ trời nếu ở dưới đất giá trị nó nhận được sẽ là false
+    DuckState duckState = FLYING; // đặt trạng thái của vịt đang bay 
     srand(static_cast<unsigned>(time(0)));
 
     float currentSpeedMultiplier = 1.0f;
-    setDuckTargets(duckRect, duckSpeedX, duckSpeedY, centerTarget, finalTarget, currentSpeedMultiplier, spawnedFromSky); // Initialize the duck's target
+    setDuckTargets(duckRect, duckSpeedX, duckSpeedY, centerTarget, finalTarget, currentSpeedMultiplier, spawnedFromSky); // khởi tạo các con vịt 
 
     int score = 0;
     int crosshairX = SCREEN_WIDTH / 2;
@@ -119,40 +119,40 @@ int main(int argc, char* args[]) {
 
     std::cout << "Duck Hunt Game starting..." << std::endl;
 
-    // Define the full-screen rectangle for the background
+    // đạt cho back ground sẽ là hình chữ nhật 
     SDL_Rect backgroundRect = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
-    // Main game loop
+    // tạo vòng lặp 
     while (!quit) {
-        // Handle events
+        // xử lý các event
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
                 quit = true;
             } else if (e.type == SDL_MOUSEMOTION) {
-                // Update crosshair position based on mouse
+                // cập nhật vị trí crosshair dựa vào con trỏ chuột 
                 crosshairX = e.motion.x;
                 crosshairY = e.motion.y;
             } else if (e.type == SDL_MOUSEBUTTONDOWN && duckState == FLYING) {
-                // Check if crosshair overlaps with the duck on click
+                // kiểm tra xem crosshair có click được mấy con vịt không 
                 if (crosshairX >= duckRect.x && crosshairX <= duckRect.x + DUCK_WIDTH &&
                     crosshairY >= duckRect.y && crosshairY <= duckRect.y + DUCK_HEIGHT) {
                     score++;
                     std::cout << "Hit! Score: " << score << "\n";
 
-                    // Set duck to falling state
+                    // đặt con vịt vào trạng thái rơi nếu bấm trúng 
                     duckState = FALLING;
-                    duckSpeedX = 0;         // Stop horizontal movement
-                    duckSpeedY = FALL_SPEED; // Set vertical fall speed
+                    duckSpeedX = 0;         // dừng trạng thái bay của con vịt 
+                    duckSpeedY = FALL_SPEED; // cho nó rơi theo vector x và y hiện tại 
                 }
             }
         }
 
-        // Update duck position based on its state
+        // cập nhật vị trí của vịt dựa vào trạng thái của nó
         if (duckState == FLYING) {
             if (headingToCenter && abs(duckRect.x - centerTarget.x) < 5 && abs(duckRect.y - centerTarget.y) < 5) {
                 headingToCenter = false;
 
-                // Calculate new speed towards the final target
+                // phép toán làm cho con vịt bay nhanh hơn sau khi đạt ngưỡng 25 con 
                 int dx = finalTarget.x - duckRect.x;
                 int dy = finalTarget.y - duckRect.y;
                 float distance = sqrt(dx * dx + dy * dy);
@@ -160,35 +160,35 @@ int main(int argc, char* args[]) {
                 duckSpeedY = currentSpeedMultiplier * BASE_SPEED * (dy / distance);
             }
 
-            // Update duck position
+            // cập nhật vị trí của vịt
             duckRect.x += static_cast<int>(duckSpeedX);
             duckRect.y += static_cast<int>(duckSpeedY);
 
-            // Check if the duck has gone off the screen
+            // thuật toán check xem con vị đã rơi khỏi nền hay chưa 
             if (duckRect.y > SCREEN_HEIGHT || duckRect.y < -DUCK_HEIGHT || duckRect.x > SCREEN_WIDTH || duckRect.x < -DUCK_WIDTH) {
                 setDuckTargets(duckRect, duckSpeedX, duckSpeedY, centerTarget, finalTarget, currentSpeedMultiplier, spawnedFromSky);
                 headingToCenter = true;
             }
         } else if (duckState == FALLING) {
-            // Update duck position to fall
+            // cập nhật vị trí của vịt để rơi
             duckRect.y += static_cast<int>(duckSpeedY);
 
-            // Respawn duck if it falls off the screen
+            // hồi sinh lại con vịt nếu nó bay ra khỏi nền và chưa bị bắn
             if (duckRect.y > SCREEN_HEIGHT) {
-                duckState = FLYING; // Reset to flying state
+                duckState = FLYING; // về lại chế độ bay 
                 setDuckTargets(duckRect, duckSpeedX, duckSpeedY, centerTarget, finalTarget, currentSpeedMultiplier, spawnedFromSky);
                 headingToCenter = true;
             }
         }
 
-        // Clear the screen
-        SDL_SetRenderDrawColor(renderer, 135, 206, 250, 255); // Sky blue background for "Duck Hunt" feel
+        // clear the screen
+        SDL_SetRenderDrawColor(renderer, 135, 206, 250, 255); // render nền trời
         SDL_RenderClear(renderer);
 
-        // Render the background
+        // render nền 
         SDL_RenderCopy(renderer, backgroundTexture, nullptr, &backgroundRect);
 
-        // Choose the appropriate texture based on duck state and position
+        // chọn kết cấu phù hợp dựa trên trạng thái và vị trí của vịt
         SDL_Texture* currentDuckTexture;
         if (duckState == FALLING) {
             currentDuckTexture = duckFallTexture;
@@ -196,24 +196,24 @@ int main(int argc, char* args[]) {
             currentDuckTexture = (duckRect.y < SCREEN_HEIGHT / 2) ? duckTextureSky : duckTextureGround;
         }
 
-        // Render the duck
+        // render ra con vịt
         SDL_RenderCopy(renderer, currentDuckTexture, nullptr, &duckRect);
 
-        // Draw crosshair at current mouse position
+        // đặt vị trí của crosshair vào vị trí x.y mà con chuột đang chỉ 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderDrawLine(renderer, crosshairX - CROSSHAIR_SIZE, crosshairY, crosshairX + CROSSHAIR_SIZE, crosshairY);
         SDL_RenderDrawLine(renderer, crosshairX, crosshairY - CROSSHAIR_SIZE, crosshairX, crosshairY + CROSSHAIR_SIZE);
 
-        // Update screen
+        // cập nhật màn hình 
         SDL_RenderPresent(renderer);
 
-        // Delay to control frame rate
+        // điều chỉnh frame rate 
         SDL_Delay(16); // ~60 FPS
     }
 
     std::cout << "Game Over! Final Score: " << score << "\n";
 
-    // Clean up resources
+    // xóa các resource 
     SDL_DestroyTexture(duckTextureSky);
     SDL_DestroyTexture(duckTextureGround);
     SDL_DestroyTexture(duckFallTexture);
