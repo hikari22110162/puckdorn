@@ -5,7 +5,7 @@
 #include <ctime>
 #include <string>
 #include <cmath>
-
+using namespace std;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 const int CROSSHAIR_SIZE = 15;  // độ dài crosshair 
@@ -21,10 +21,10 @@ enum DuckState {
 };
 
 // load image fucntion r
-SDL_Texture* loadTexture(const std::string &path, SDL_Renderer *renderer) {
+SDL_Texture* loadTexture(const string &path, SDL_Renderer *renderer) {
     SDL_Texture* newTexture = IMG_LoadTexture(renderer, path.c_str());
     if (newTexture == nullptr) {
-        std::cerr << "Failed to load texture " << path << " SDL_image Error: " << IMG_GetError() << "\n";
+        cerr << "Failed to load texture " << path << " SDL_image Error: " << IMG_GetError() << "\n";
     }
     return newTexture;
 }
@@ -61,13 +61,13 @@ int main(int argc, char* args[]) {
 
     // khởi tạo sdl
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << "\n";
+        cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << "\n";
         return 1;
     }
 
     // khởi tạo sdl.image dùng cho load các file có đuôi là jpg hay là png
     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        std::cerr << "SDL_image could not initialize! SDL_image Error: " << IMG_GetError() << "\n";
+        cerr << "SDL_image could not initialize! SDL_image Error: " << IMG_GetError() << "\n";
         SDL_Quit();
         return 1;
     }
@@ -76,7 +76,7 @@ int main(int argc, char* args[]) {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     if (!window || !renderer) {
-        std::cerr << "Window or renderer could not be created! SDL_Error: " << SDL_GetError() << "\n";
+        cerr << "Window or renderer could not be created! SDL_Error: " << SDL_GetError() << "\n";
         SDL_Quit();
         return 1;
     }
@@ -91,7 +91,7 @@ int main(int argc, char* args[]) {
     SDL_Texture* backgroundTexture = loadTexture("C:/Users/bebiu/Desktop/Prj/background.png", renderer); // Full background texture
 
     if (!duckTextureSky || !duckTextureGround || !duckFallTexture || !backgroundTexture) {
-        std::cerr << "Error: Some textures not loaded. Check the file paths and formats.\n";
+        cerr << "Error: Some textures not loaded. Check the file paths and formats.\n";
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         IMG_Quit();
@@ -117,7 +117,7 @@ int main(int argc, char* args[]) {
     bool quit = false;
     SDL_Event e;
 
-    std::cout << "Duck Hunt Game starting..." << std::endl;
+    cout << "Duck Hunt Game starting..." << endl;
 
     // đạt cho back ground sẽ là hình chữ nhật 
     SDL_Rect backgroundRect = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
@@ -137,7 +137,7 @@ int main(int argc, char* args[]) {
                 if (crosshairX >= duckRect.x && crosshairX <= duckRect.x + DUCK_WIDTH &&
                     crosshairY >= duckRect.y && crosshairY <= duckRect.y + DUCK_HEIGHT) {
                     score++;
-                    std::cout << "Hit! Score: " << score << "\n";
+                    cout << "Hit! Score: " << score << "\n";
 
                     // đặt con vịt vào trạng thái rơi nếu bấm trúng 
                     duckState = FALLING;
@@ -211,7 +211,7 @@ int main(int argc, char* args[]) {
         SDL_Delay(16); // ~60 FPS
     }
 
-    std::cout << "Game Over! Final Score: " << score << "\n";
+    cout << "Game Over! Final Score: " << score << "\n";
 
     // xóa các resource 
     SDL_DestroyTexture(duckTextureSky);
