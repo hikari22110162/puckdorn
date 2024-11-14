@@ -32,6 +32,7 @@ SDL_Texture* duckFrames[DUCK_FRAMES + 1];
 int currentFrame = 1;
 int frameDelay = 100;
 Uint32 lastFrameTime = 0;
+int bulletslelf =3;
 
 // Duck states
 enum DuckState {
@@ -52,53 +53,11 @@ DuckState duckState = FLYING_HORIZONTAL;
 Uint32 popStartTime = 0;
 int selectedOption = 0; // For the menu
 
-// Function to draw menu text (placeholder since we aren't using SDL_ttf)
-void drawMenuText(SDL_Renderer* renderer, const string& text, int x, int y, bool isSelected) {
-    SDL_SetRenderDrawColor(renderer, isSelected ? 255 : 200, isSelected ? 255 : 200, 0, 255);
-    SDL_Rect rect = {x, y, static_cast<int>(text.size() * 15), 30};
-    SDL_RenderFillRect(renderer, &rect);
-}
+// Khai báo hàm loadTexture và showMainMenu trước khi sử dụng
+SDL_Texture* loadTexture(const string& path, SDL_Renderer* renderer);
+bool showMainMenu(SDL_Renderer* renderer);
 
-// Function to show the main menu
-bool showMainMenu(SDL_Renderer* renderer) {
-    SDL_Event e;
-    bool inMenu = true;
-
-    while (inMenu) {
-        // Handle menu input
-        while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDL_QUIT) return false;
-
-            if (e.type == SDL_KEYDOWN) {
-                switch (e.key.keysym.sym) {
-                    case SDLK_UP:
-                        selectedOption = (selectedOption - 1 + TOTAL_OPTIONS) % TOTAL_OPTIONS;
-                        break;
-                    case SDLK_DOWN:
-                        selectedOption = (selectedOption + 1) % TOTAL_OPTIONS;
-                        break;
-                    case SDLK_RETURN:
-                    case SDLK_SPACE:
-                        if (selectedOption == START_GAME) return true;
-                        if (selectedOption == QUIT_GAME) return false;
-                }
-            }
-        }
-
-        // Render the menu
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-
-        drawMenuText(renderer, "Start Game", 300, 200, selectedOption == START_GAME);
-        drawMenuText(renderer, "Quit Game", 300, 250, selectedOption == QUIT_GAME);
-
-        SDL_RenderPresent(renderer);
-    }
-
-    return false;
-}
-
-// Function to load textures
+// Hàm loadTexture để tải ảnh từ file
 SDL_Texture* loadTexture(const string& path, SDL_Renderer* renderer) {
     SDL_Texture* newTexture = IMG_LoadTexture(renderer, path.c_str());
     if (newTexture == nullptr) {
@@ -106,12 +65,125 @@ SDL_Texture* loadTexture(const string& path, SDL_Renderer* renderer) {
     }
     return newTexture;
 }
+SDL_Texture* loadTexture(const string& path, SDL_Renderer* renderer);
 
+// Hàm tải hình ảnh biểu tượng đạn
+SDL_Texture* loadBulletIcon(SDL_Renderer* renderer) {
+    return loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/bullet.png", renderer);
+}
+// Hàm hiển thị menu
+bool showMainMenu(SDL_Renderer* renderer) {
+    // Tải hình ảnh nền cho menu
+    SDL_ShowCursor(SDL_ENABLE);
+
+    SDL_Texture* menuBackground = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/main_menu_background.png", renderer);
+    if (menuBackground == nullptr) {
+        cerr << "Failed to load menu background.\n";
+        return false;
+    }
+
+    SDL_Rect option1Rect = {210, 330, 180, 100};
+    SDL_Rect option2Rect = {420, 330, 180, 100};
+    SDL_Event e;
+    bool inMenu = true;
+    int selectedOption = -1;
+
+    while (inMenu) {
+        while (SDL_PollEvent(&e) != 0) {
+            if (e.type == SDL_QUIT) {
+                SDL_DestroyTexture(menuBackground);
+                return false;
+            }
+            if (e.type == SDL_MOUSEBUTTONDOWN) {
+                int mouseX = e.button.x;
+                int mouseY = e.button.y;
+
+                if (mouseX >= option1Rect.x && mouseX <= option1Rect.x + option1Rect.w &&
+                    mouseY >= option1Rect.y && mouseY <= option1Rect.y + option1Rect.h) {
+                    selectedOption = 1;
+                    inMenu = false;
+                }
+
+                if (mouseX >= option2Rect.x && mouseX <= option2Rect.x + option2Rect.w &&
+                    mouseY >= option2Rect.y && mouseY <= option2Rect.y + option2Rect.h) {
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Notice", "Function will be updated soon", nullptr);
+                }
+            }
+        }
+
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, menuBackground, nullptr, nullptr);
+        SDL_RenderPresent(renderer);
+    }
+
+    SDL_DestroyTexture(menuBackground);
+    return (selectedOption == 1);
+}
+// Định nghĩa hàm showPauseMenu trước hàm main
+bool showPauseMenu(SDL_Renderer* renderer) {
+    SDL_ShowCursor(SDL_ENABLE); // Hiển thị con trỏ chuột khi ở menu tạm dừng
+
+    // Tạo background cho menu tạm dừng
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200);
+    SDL_Rect pauseMenuRect = {100, 150, 600, 300};
+    SDL_RenderFillRect(renderer, &pauseMenuRect);
+
+    // Định nghĩa các vùng nhấn cho các nút
+    SDL_Rect continueRect = {200, 200, 400, 50};
+    SDL_Rect settingsRect = {200, 270, 400, 50};
+    SDL_Rect backToMenuRect = {200, 340, 400, 50};
+
+    SDL_Event e;
+    bool inPauseMenu = true;
+    int selectedOption = -1;
+
+    while (inPauseMenu) {
+        while (SDL_PollEvent(&e) != 0) {
+            if (e.type == SDL_QUIT) return false;
+            if (e.type == SDL_MOUSEBUTTONDOWN) {
+                int mouseX = e.button.x;
+                int mouseY = e.button.y;
+
+                // Kiểm tra nếu nhấn vào "Continue"
+                if (mouseX >= continueRect.x && mouseX <= continueRect.x + continueRect.w &&
+                    mouseY >= continueRect.y && mouseY <= continueRect.y + continueRect.h) {
+                    selectedOption = 1;
+                    inPauseMenu = false;
+                }
+                // Kiểm tra nếu nhấn vào "Settings"
+                if (mouseX >= settingsRect.x && mouseX <= settingsRect.x + settingsRect.w &&
+                    mouseY >= settingsRect.y && mouseY <= settingsRect.y + settingsRect.h) {
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Settings", "Settings will be updated soon", nullptr);
+                }
+                // Kiểm tra nếu nhấn vào "Back to Menu"
+                if (mouseX >= backToMenuRect.x && mouseX <= backToMenuRect.x + backToMenuRect.w &&
+                    mouseY >= backToMenuRect.y && mouseY <= backToMenuRect.y + backToMenuRect.h) {
+                    selectedOption = 3;
+                    inPauseMenu = false;
+                }
+            }
+        }
+        SDL_RenderPresent(renderer);
+    }
+
+    SDL_ShowCursor(SDL_DISABLE); // Ẩn con trỏ khi quay lại trò chơi
+    return (selectedOption == 1);
+}
 // Load duck animation frames
 void loadDuckFrames(SDL_Renderer* renderer) {
     for (int i = 1; i <= DUCK_FRAMES; ++i) {
         string path = "C:/Users/bebiu/Desktop/puckdorn.com/frame" + to_string(i) + ".png";
         duckFrames[i] = loadTexture(path, renderer);
+    }
+}
+void drawBullets(SDL_Renderer* renderer, SDL_Texture* bulletTexture, int bulletsLeft) {
+    const int bulletWidth = 30;      // Chiều rộng biểu tượng đạn
+    const int bulletHeight = 30;     // Chiều cao biểu tượng đạn
+    const int spacing = 5;           // Khoảng cách giữa các viên đạn
+
+    for (int i = 0; i < bulletsLeft; ++i) {
+        SDL_Rect bulletRect = {10 + i * (bulletWidth + spacing), 10, bulletWidth, bulletHeight};
+        SDL_RenderCopy(renderer, bulletTexture, nullptr, &bulletRect);
     }
 }
 
@@ -172,23 +244,66 @@ void drawStats(SDL_Renderer* renderer) {
 
 
 int main(int argc, char* args[]) {
-    // Initialize SDL and SDL_image
-    SDL_Init(SDL_INIT_VIDEO);
-    IMG_Init(IMG_INIT_PNG);
+    // Khởi tạo SDL và SDL_image
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << "\n";
+        return -1;
+    }
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        cerr << "SDL_image could not initialize! IMG_Error: " << IMG_GetError() << "\n";
+        SDL_Quit();
+        return -1;
+    }
 
+    // Tạo cửa sổ và renderer
     SDL_Window* window = SDL_CreateWindow("Duck Hunt", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_ShowCursor(SDL_DISABLE);
+    if (window == nullptr) {
+        cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << "\n";
+        IMG_Quit();
+        SDL_Quit();
+        return -1;
+    }
 
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (renderer == nullptr) {
+        cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError() << "\n";
+        SDL_DestroyWindow(window);
+        IMG_Quit();
+        SDL_Quit();
+        return -1;
+    }
+
+    // Tải tài nguyên hình ảnh
     loadDuckFrames(renderer);
     SDL_Texture* backgroundTexture = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/background.png", renderer);
     SDL_Texture* foregroundTexture = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/foreground.png", renderer);
+    SDL_Texture* bulletTexture = loadBulletIcon(renderer);
+    if (bulletTexture == nullptr) {
+    cerr << "Failed to load bullet icon.\n";
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
 
-    // Show the main menu
-    if (!showMainMenu(renderer)) {
+    IMG_Quit();
+    SDL_Quit();
+    return -1;
+    }
+    if (backgroundTexture == nullptr || foregroundTexture == nullptr) {
+        cerr << "Failed to load game textures.\n";
         freeDuckFrames();
-        SDL_DestroyTexture(backgroundTexture);
-        SDL_DestroyTexture(foregroundTexture);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        IMG_Quit();
+        SDL_Quit();
+        return -1;
+    }
+
+    bool inGame = false;
+
+    // Hiển thị menu chính
+    if (showMainMenu(renderer)) {
+        inGame = true;
+    } else {
+        // Người chơi đã chọn thoát trò chơi
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         IMG_Quit();
@@ -196,7 +311,12 @@ int main(int argc, char* args[]) {
         return 0;
     }
 
-    // Initialize duck properties
+    // Ẩn con trỏ chuột khi bắt đầu trò chơi
+    SDL_ShowCursor(SDL_DISABLE);
+
+    // Khởi tạo các thuộc tính của con vịt
+    int bulletsleft = 3;
+    bool duckHit = false;
     SDL_Rect duckRect = {0, DUCK_SPAWN_Y, DUCK_WIDTH, DUCK_HEIGHT};
     spawnDuck(duckRect);
     float duckSpeedX = BASE_SPEED;
@@ -205,7 +325,6 @@ int main(int argc, char* args[]) {
     int crosshairY = SCREEN_HEIGHT / 2;
     bool quit = false;
     SDL_Event e;
-
 // Game loop
 while (!quit) {
     while (SDL_PollEvent(&e) != 0) {
@@ -213,7 +332,26 @@ while (!quit) {
         else if (e.type == SDL_MOUSEMOTION) {
             crosshairX = e.motion.x;
             crosshairY = e.motion.y;
-        } else if (e.type == SDL_MOUSEBUTTONDOWN && duckState != FALLING) {
+        } 
+        else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+                // Khi nhấn phím ESC, mở menu tạm dừng
+                if (!showPauseMenu(renderer)) {
+                    quit = true; // Thoát trò chơi nếu chọn "Back to Menu"
+                }
+            }
+        else if (e.type == SDL_MOUSEBUTTONDOWN && bulletsLeft > 0 && duckState != FALLING) {
+            bulletsLeft--; // Giảm số đạn khi bắn
+            // Kiểm tra nếu người chơi bắn trúng con vịt
+            if (crosshairX >= duckRect.x && crosshairX <= duckRect.x + DUCK_WIDTH &&
+                crosshairY >= duckRect.y && crosshairY <= duckRect.y + DUCK_HEIGHT) {
+                duckState = POP;
+                currentFrame = 7;
+                popStartTime = SDL_GetTicks();
+                duckHit = true;
+                bulletsLeft = 3; // Khởi động lại số đạn khi bắn trúng
+            }
+        }
+        else if (e.type == SDL_MOUSEBUTTONDOWN && duckState != FALLING) {
             if (crosshairX >= duckRect.x && crosshairX <= duckRect.x + DUCK_WIDTH &&
                 crosshairY >= duckRect.y && crosshairY <= duckRect.y + DUCK_HEIGHT) {
                 duckState = POP;
@@ -224,7 +362,11 @@ while (!quit) {
     }
 
     updateDuckFrame();
-
+ // Kiểm tra nếu hết đạn mà không bắn trúng con vịt
+    if (bulletsLeft == 0 && !duckHit) {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Game Over", "You're out of bullets!", nullptr);
+            quit = true;
+    }
     if (duckState == POP) {
         if (SDL_GetTicks() - popStartTime > 500) {
             duckState = FALLING;
@@ -262,13 +404,15 @@ while (!quit) {
 }
 
 
-    freeDuckFrames();
-    SDL_DestroyTexture(backgroundTexture);
-    SDL_DestroyTexture(foregroundTexture);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    IMG_Quit();
-    SDL_Quit();
+    // Dọn dẹp tài nguyên trước khi thoát
+freeDuckFrames();
+SDL_DestroyTexture(bulletTexture);
+SDL_DestroyTexture(backgroundTexture);
+SDL_DestroyTexture(foregroundTexture);
+SDL_DestroyRenderer(renderer);
+SDL_DestroyWindow(window);
+IMG_Quit();
+SDL_Quit();
 
     return 0;
 }
