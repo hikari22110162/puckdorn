@@ -1,0 +1,7 @@
+TTF_Font* font = TTF_OpenFont("arial.ttf", 24); // Load font with size 24
+if (font == nullptr) {
+    cerr << "Failed to load font: " << TTF_GetError() << "\n";
+    TTF_Quit();
+    SDL_Quit();
+    return -1;
+}

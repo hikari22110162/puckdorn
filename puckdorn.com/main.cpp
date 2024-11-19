@@ -25,6 +25,9 @@ int score = 0; // Player's score
 int level = 1; // Game level
 float speedMultiplier = 1.0f; // Speed multiplier for higher levels
 const int SCORE_THRESHOLD = 5; // Ducks needed to level up
+int crosshairSize = 15;
+int soundVolume = 50;
+float duckSpeedMultiplier = 1.0f;
 
 // Animation frames
 const int DUCK_FRAMES = 11;
@@ -71,6 +74,98 @@ SDL_Texture* loadTexture(const string& path, SDL_Renderer* renderer);
 SDL_Texture* loadBulletIcon(SDL_Renderer* renderer) {
     return loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/bullet.png", renderer);
 }
+void drawText(SDL_Renderer* renderer, const string& text, int x, int y, SDL_Color color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_Rect rect = {x, y, static_cast<int>(text.size() * 10), 30};
+    SDL_RenderFillRect(renderer, &rect);
+}
+bool showSettingsMenu(SDL_Renderer* renderer, int& crosshairSize, int& soundVolume, float& duckSpeedMultiplier) {
+    SDL_ShowCursor(SDL_ENABLE); // Hiển thị con trỏ chuột trong menu cài đặt
+
+    // Tạo nền cho menu cài đặt
+    SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+    SDL_Rect settingsRect = {100, 100, 600, 400};
+    SDL_RenderFillRect(renderer, &settingsRect);
+
+    // Các vùng nhấn cho các cài đặt
+    SDL_Rect crosshairRect = {150, 150, 500, 50};
+    SDL_Rect soundVolumeRect = {150, 250, 500, 50};
+    SDL_Rect duckSpeedRect = {150, 350, 500, 50};
+    SDL_Rect saveRect = {300, 450, 200, 50};
+
+    SDL_Event e;
+    bool inSettings = true;
+
+    while (inSettings) {
+        while (SDL_PollEvent(&e) != 0) {
+            if (e.type == SDL_QUIT) return false;
+            if (e.type == SDL_MOUSEBUTTONDOWN) {
+                int mouseX = e.button.x;
+                int mouseY = e.button.y;
+
+                // Điều chỉnh kích thước crosshair
+                if (mouseX >= crosshairRect.x && mouseX <= crosshairRect.x + crosshairRect.w &&
+                    mouseY >= crosshairRect.y && mouseY <= crosshairRect.y + crosshairRect.h) {
+                    crosshairSize += 5;
+                    if (crosshairSize > 50) crosshairSize = 15; // Reset nếu quá lớn
+                }
+
+                // Điều chỉnh âm lượng
+                if (mouseX >= soundVolumeRect.x && mouseX <= soundVolumeRect.x + soundVolumeRect.w &&
+                    mouseY >= soundVolumeRect.y && mouseY <= soundVolumeRect.y + soundVolumeRect.h) {
+                    soundVolume += 10;
+                    if (soundVolume > 100) soundVolume = 0; // Reset nếu quá lớn
+                }
+
+                // Điều chỉnh tốc độ vịt
+                if (mouseX >= duckSpeedRect.x && mouseX <= duckSpeedRect.x + duckSpeedRect.w &&
+                    mouseY >= duckSpeedRect.y && mouseY <= duckSpeedRect.y + duckSpeedRect.h) {
+                    duckSpeedMultiplier += 0.5f;
+                    if (duckSpeedMultiplier > 3.0f) duckSpeedMultiplier = 1.0f; // Reset nếu quá lớn
+                }
+
+                // Lưu và thoát
+                if (mouseX >= saveRect.x && mouseX <= saveRect.x + saveRect.w &&
+                    mouseY >= saveRect.y && mouseY <= saveRect.y + saveRect.h) {
+                    inSettings = false; // Thoát menu cài đặt
+                }
+            }
+        }
+
+        // Vẽ giao diện menu cài đặt
+        SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+        SDL_RenderFillRect(renderer, &settingsRect);
+
+        // Hiển thị các tùy chọn cài đặt
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+        // Crosshair size
+        SDL_Rect optionRect = crosshairRect;
+        SDL_RenderFillRect(renderer, &optionRect);
+        drawText(renderer, "Crosshair Size: " + to_string(crosshairSize), crosshairRect.x + 10, crosshairRect.y + 10, {0, 0, 0, 255});
+
+        // Sound volume
+        optionRect = soundVolumeRect;
+        SDL_RenderFillRect(renderer, &optionRect);
+        drawText(renderer, "Sound Volume: " + to_string(soundVolume), soundVolumeRect.x + 10, soundVolumeRect.y + 10, {0, 0, 0, 255});
+
+        // Duck speed
+        optionRect = duckSpeedRect;
+        SDL_RenderFillRect(renderer, &optionRect);
+        drawText(renderer, "Duck Speed Multiplier: " + to_string(duckSpeedMultiplier), duckSpeedRect.x + 10, duckSpeedRect.y + 10, {0, 0, 0, 255});
+
+        // Save button
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+        SDL_RenderFillRect(renderer, &saveRect);
+        drawText(renderer, "Save and Exit", saveRect.x + 40, saveRect.y + 10, {0, 0, 0, 255});
+
+        SDL_RenderPresent(renderer);
+    }
+
+    SDL_ShowCursor(SDL_DISABLE); // Ẩn con trỏ sau khi thoát menu
+    return true;
+}
+
 // Hàm hiển thị menu
 bool showMainMenu(SDL_Renderer* renderer) {
     // Tải hình ảnh nền cho menu
@@ -153,7 +248,9 @@ bool showPauseMenu(SDL_Renderer* renderer) {
                 // Kiểm tra nếu nhấn vào "Settings"
                 if (mouseX >= settingsRect.x && mouseX <= settingsRect.x + settingsRect.w &&
                     mouseY >= settingsRect.y && mouseY <= settingsRect.y + settingsRect.h) {
-                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Settings", "Settings will be updated soon", nullptr);
+                    if (!showSettingsMenu(renderer, crosshairSize, soundVolume, duckSpeedMultiplier)) {
+                        inPauseMenu = false;
+                    }
                 }
                 // Kiểm tra nếu nhấn vào "Back to Menu"
                 if (mouseX >= backToMenuRect.x && mouseX <= backToMenuRect.x + backToMenuRect.w &&
@@ -169,6 +266,7 @@ bool showPauseMenu(SDL_Renderer* renderer) {
     SDL_ShowCursor(SDL_DISABLE); // Ẩn con trỏ khi quay lại trò chơi
     return (selectedOption == 1);
 }
+
 // Load duck animation frames
 void loadDuckFrames(SDL_Renderer* renderer) {
     for (int i = 1; i <= DUCK_FRAMES; ++i) {
@@ -236,12 +334,6 @@ void drawCrosshair(SDL_Renderer* renderer, int x, int y) {
     SDL_RenderDrawLine(renderer, x - CROSSHAIR_SIZE, y, x + CROSSHAIR_SIZE, y);
     // Draw vertical line
     SDL_RenderDrawLine(renderer, x, y - CROSSHAIR_SIZE, x, y + CROSSHAIR_SIZE);
-}
-// Function to draw text on the screen (for score, level, and bullets)
-void drawText(SDL_Renderer* renderer, const string& text, int x, int y, SDL_Color color) {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_Rect rect = {x, y, static_cast<int>(text.size() * 10), 30};
-    SDL_RenderFillRect(renderer, &rect);
 }
 
 // Function to draw the game statistics
