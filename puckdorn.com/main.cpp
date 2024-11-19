@@ -197,6 +197,15 @@ void spawnDuck(SDL_Rect& duckRect) {
     duckRect.x = rand() % (SCREEN_WIDTH - DUCK_WIDTH);
     duckRect.y = DUCK_SPAWN_Y;
 }
+void checkGameOver(SDL_Renderer* renderer) {
+    if (bulletsLeft <= 0 && duckState != FALLING) {
+        // Display a "Game Over" message box
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Game Over", "You are out of bullets and missed the duck!", nullptr);
+        
+        // Set the `quit` flag to true to exit the game loop
+        exit(0);
+    }
+}
 
 // Update duck animation frame
 void updateDuckFrame() {
@@ -348,7 +357,7 @@ while (!quit) {
                 currentFrame = 7;
                 popStartTime = SDL_GetTicks();
                 duckHit = true;
-                bulletsLeft = 3; // Khởi động lại số đạn khi bắn trúng
+                
             }
         }
         else if (e.type == SDL_MOUSEBUTTONDOWN && duckState != FALLING) {
@@ -360,13 +369,12 @@ while (!quit) {
             }
         }
     }
-
-    updateDuckFrame();
- // Kiểm tra nếu hết đạn mà không bắn trúng con vịt
     if (bulletsLeft == 0 && !duckHit) {
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Game Over", "You're out of bullets!", nullptr);
             quit = true;
     }
+    updateDuckFrame();
+ // Kiểm tra nếu hết đạn mà không bắn trúng con vịt
     if (duckState == POP) {
         if (SDL_GetTicks() - popStartTime > 500) {
             duckState = FALLING;
@@ -378,6 +386,8 @@ while (!quit) {
             duckState = FLYING_HORIZONTAL;
             spawnDuck(duckRect);
             currentFrame = 1;
+            duckHit = false;
+            bulletsLeft =3;
         }
     } else {
         duckRect.x += duckSpeedX;
