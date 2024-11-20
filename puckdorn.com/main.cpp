@@ -25,9 +25,6 @@ int score = 0; // Player's score
 int level = 1; // Game level
 float speedMultiplier = 1.0f; // Speed multiplier for higher levels
 const int SCORE_THRESHOLD = 5; // Ducks needed to level up
-int crosshairSize = 15;
-int soundVolume = 50;
-float duckSpeedMultiplier = 1.0f;
 
 // Animation frames
 const int DUCK_FRAMES = 11;
@@ -72,106 +69,14 @@ SDL_Texture* loadTexture(const string& path, SDL_Renderer* renderer);
 
 // Hàm tải hình ảnh biểu tượng đạn
 SDL_Texture* loadBulletIcon(SDL_Renderer* renderer) {
-    return loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/bullet.png", renderer);
+    return loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/puckdorn.com/bullet.png", renderer);
 }
-void drawText(SDL_Renderer* renderer, const string& text, int x, int y, SDL_Color color) {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_Rect rect = {x, y, static_cast<int>(text.size() * 10), 30};
-    SDL_RenderFillRect(renderer, &rect);
-}
-bool showSettingsMenu(SDL_Renderer* renderer, int& crosshairSize, int& soundVolume, float& duckSpeedMultiplier) {
-    SDL_ShowCursor(SDL_ENABLE); // Hiển thị con trỏ chuột trong menu cài đặt
-
-    // Tạo nền cho menu cài đặt
-    SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
-    SDL_Rect settingsRect = {100, 100, 600, 400};
-    SDL_RenderFillRect(renderer, &settingsRect);
-
-    // Các vùng nhấn cho các cài đặt
-    SDL_Rect crosshairRect = {150, 150, 500, 50};
-    SDL_Rect soundVolumeRect = {150, 250, 500, 50};
-    SDL_Rect duckSpeedRect = {150, 350, 500, 50};
-    SDL_Rect saveRect = {300, 450, 200, 50};
-
-    SDL_Event e;
-    bool inSettings = true;
-
-    while (inSettings) {
-        while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDL_QUIT) return false;
-            if (e.type == SDL_MOUSEBUTTONDOWN) {
-                int mouseX = e.button.x;
-                int mouseY = e.button.y;
-
-                // Điều chỉnh kích thước crosshair
-                if (mouseX >= crosshairRect.x && mouseX <= crosshairRect.x + crosshairRect.w &&
-                    mouseY >= crosshairRect.y && mouseY <= crosshairRect.y + crosshairRect.h) {
-                    crosshairSize += 5;
-                    if (crosshairSize > 50) crosshairSize = 15; // Reset nếu quá lớn
-                }
-
-                // Điều chỉnh âm lượng
-                if (mouseX >= soundVolumeRect.x && mouseX <= soundVolumeRect.x + soundVolumeRect.w &&
-                    mouseY >= soundVolumeRect.y && mouseY <= soundVolumeRect.y + soundVolumeRect.h) {
-                    soundVolume += 10;
-                    if (soundVolume > 100) soundVolume = 0; // Reset nếu quá lớn
-                }
-
-                // Điều chỉnh tốc độ vịt
-                if (mouseX >= duckSpeedRect.x && mouseX <= duckSpeedRect.x + duckSpeedRect.w &&
-                    mouseY >= duckSpeedRect.y && mouseY <= duckSpeedRect.y + duckSpeedRect.h) {
-                    duckSpeedMultiplier += 0.5f;
-                    if (duckSpeedMultiplier > 3.0f) duckSpeedMultiplier = 1.0f; // Reset nếu quá lớn
-                }
-
-                // Lưu và thoát
-                if (mouseX >= saveRect.x && mouseX <= saveRect.x + saveRect.w &&
-                    mouseY >= saveRect.y && mouseY <= saveRect.y + saveRect.h) {
-                    inSettings = false; // Thoát menu cài đặt
-                }
-            }
-        }
-
-        // Vẽ giao diện menu cài đặt
-        SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
-        SDL_RenderFillRect(renderer, &settingsRect);
-
-        // Hiển thị các tùy chọn cài đặt
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-
-        // Crosshair size
-        SDL_Rect optionRect = crosshairRect;
-        SDL_RenderFillRect(renderer, &optionRect);
-        drawText(renderer, "Crosshair Size: " + to_string(crosshairSize), crosshairRect.x + 10, crosshairRect.y + 10, {0, 0, 0, 255});
-
-        // Sound volume
-        optionRect = soundVolumeRect;
-        SDL_RenderFillRect(renderer, &optionRect);
-        drawText(renderer, "Sound Volume: " + to_string(soundVolume), soundVolumeRect.x + 10, soundVolumeRect.y + 10, {0, 0, 0, 255});
-
-        // Duck speed
-        optionRect = duckSpeedRect;
-        SDL_RenderFillRect(renderer, &optionRect);
-        drawText(renderer, "Duck Speed Multiplier: " + to_string(duckSpeedMultiplier), duckSpeedRect.x + 10, duckSpeedRect.y + 10, {0, 0, 0, 255});
-
-        // Save button
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-        SDL_RenderFillRect(renderer, &saveRect);
-        drawText(renderer, "Save and Exit", saveRect.x + 40, saveRect.y + 10, {0, 0, 0, 255});
-
-        SDL_RenderPresent(renderer);
-    }
-
-    SDL_ShowCursor(SDL_DISABLE); // Ẩn con trỏ sau khi thoát menu
-    return true;
-}
-
 // Hàm hiển thị menu
 bool showMainMenu(SDL_Renderer* renderer) {
     // Tải hình ảnh nền cho menu
     SDL_ShowCursor(SDL_ENABLE);
 
-    SDL_Texture* menuBackground = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/main_menu_background.png", renderer);
+    SDL_Texture* menuBackground = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/puckdorn.com/main_menu_background.png", renderer);
     if (menuBackground == nullptr) {
         cerr << "Failed to load menu background.\n";
         return false;
@@ -218,15 +123,24 @@ bool showMainMenu(SDL_Renderer* renderer) {
 bool showPauseMenu(SDL_Renderer* renderer) {
     SDL_ShowCursor(SDL_ENABLE); // Hiển thị con trỏ chuột khi ở menu tạm dừng
 
-    // Tạo background cho menu tạm dừng
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200);
-    SDL_Rect pauseMenuRect = {100, 150, 600, 300};
-    SDL_RenderFillRect(renderer, &pauseMenuRect);
+    // Tải hình ảnh cho nút "Continue" và "Exit"
+    SDL_Texture* continueButton = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/Continue.png", renderer);
+    SDL_Texture* settingsButton = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/Settings.png", renderer);
+    SDL_Texture* exitButton = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/Exit.png", renderer);
+    SDL_Texture* logo = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/Logo.png", renderer);
+    SDL_Texture* titile = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/Pause_titile.png", renderer);
 
-    // Định nghĩa các vùng nhấn cho các nút
-    SDL_Rect continueRect = {200, 200, 400, 50};
-    SDL_Rect settingsRect = {200, 270, 400, 50};
-    SDL_Rect backToMenuRect = {200, 340, 400, 50};
+    if (!continueButton || !exitButton) {
+        SDL_Log("Failed to load button images.");
+        return false;
+    }
+
+    // Định nghĩa vị trí của các nút
+    SDL_Rect continueRect = {350, 319, 87, 13}; // Vị trí và kích thước nút "Continue"s
+    SDL_Rect exitRect = {372, 298, 42, 13};     // Vị trí và kích thước nút "Exit"
+    SDL_Rect settingsRect = {350, 340, 87, 13};
+    SDL_Rect titileRect = {303, 183, 198, 79};
+    SDL_Rect logoRect = {305, 422, 192, 18};
 
     SDL_Event e;
     bool inPauseMenu = true;
@@ -245,26 +159,49 @@ bool showPauseMenu(SDL_Renderer* renderer) {
                     selectedOption = 1;
                     inPauseMenu = false;
                 }
-                // Kiểm tra nếu nhấn vào "Settings"
-                if (mouseX >= settingsRect.x && mouseX <= settingsRect.x + settingsRect.w &&
-                    mouseY >= settingsRect.y && mouseY <= settingsRect.y + settingsRect.h) {
-                    if (!showSettingsMenu(renderer, crosshairSize, soundVolume, duckSpeedMultiplier)) {
-                        inPauseMenu = false;
-                    }
-                }
-                // Kiểm tra nếu nhấn vào "Back to Menu"
-                if (mouseX >= backToMenuRect.x && mouseX <= backToMenuRect.x + backToMenuRect.w &&
-                    mouseY >= backToMenuRect.y && mouseY <= backToMenuRect.y + backToMenuRect.h) {
-                    selectedOption = 3;
+
+                // Kiểm tra nếu nhấn vào "Exit"
+                if (mouseX >= exitRect.x && mouseX <= exitRect.x + exitRect.w &&
+                    mouseY >= exitRect.y && mouseY <= exitRect.y + exitRect.h) {
+                    selectedOption = 2;
                     inPauseMenu = false;
                 }
             }
         }
+
+        // Vẽ nền menu tạm dừng
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200); // Nền đen, độ mờ 200
+        SDL_Rect pauseMenuRect = {150, 150, 500, 300};
+        SDL_RenderFillRect(renderer, &pauseMenuRect);
+
+        //"Super Duckhunt"
+        SDL_RenderCopy(renderer, titile, nullptr, &titileRect);
+
+        //"Continue"
+        SDL_RenderCopy(renderer, continueButton, nullptr, &continueRect);
+
+        //"Exit"
+        SDL_RenderCopy(renderer, exitButton, nullptr, &exitRect);
+
+        //"Settings"
+        SDL_RenderCopy(renderer, settingsButton, nullptr, &settingsRect);
+
+        //"Logo"
+        SDL_RenderCopy(renderer, logo, nullptr, &logoRect);
+
         SDL_RenderPresent(renderer);
     }
 
+    // Dọn dẹp tài nguyên
+    SDL_DestroyTexture(continueButton);
+    SDL_DestroyTexture(settingsButton);
+    SDL_DestroyTexture(exitButton);
+    SDL_DestroyTexture(titile);
+    SDL_DestroyTexture(logo);
+
     SDL_ShowCursor(SDL_DISABLE); // Ẩn con trỏ khi quay lại trò chơi
-    return (selectedOption == 1);
+
+    return (selectedOption == 1); // Trả về true nếu chọn "Continue", false nếu chọn "Exit"/
 }
 
 // Load duck animation frames
@@ -274,25 +211,13 @@ void loadDuckFrames(SDL_Renderer* renderer) {
         duckFrames[i] = loadTexture(path, renderer);
     }
 }
-SDL_Texture* bulletTexture = nullptr; // Biến toàn cục lưu texture của viên đạn
+void drawBullets(SDL_Renderer* renderer, SDL_Texture* bulletTexture, int bulletsLeft) {
+    const int bulletWidth = 30;      // Chiều rộng biểu tượng đạn
+    const int bulletHeight = 30;     // Chiều cao biểu tượng đạn
+    const int spacing = 5;           // Khoảng cách giữa các viên đạn
 
-// Hàm để vẽ các viên đạn trong HUD
-void drawBullets(SDL_Renderer* renderer, int bulletsLeft) {
-    int bulletWidth = 10;  // Chiều rộng của viên đạn
-    int bulletHeight = 15; // Chiều cao của viên đạn
-    int frameX = 150;       // Tọa độ X của khung
-    int frameY = SCREEN_HEIGHT - 100; // Tọa độ Y của khung
-    int frameWidth = 150;  // Chiều rộng của khung
-    int frameHeight = 50;  // Chiều cao của khung
-
-    // Tính toán vị trí bắt đầu để căn giữa các viên đạn trong khung
-    int bulletsTotalWidth = bulletsLeft * bulletWidth + (bulletsLeft - 1) * 5; // Tổng chiều rộng các viên đạn
-    int startX = frameX + (frameWidth - bulletsTotalWidth) / 2; // Căn giữa theo chiều ngang
-    int startY = frameY + (frameHeight - bulletHeight) / 2;     // Căn giữa theo chiều dọc
-
-    // Vẽ từng viên đạn
     for (int i = 0; i < bulletsLeft; ++i) {
-        SDL_Rect bulletRect = {startX + (i * (bulletWidth + 5)), startY, bulletWidth, bulletHeight};
+        SDL_Rect bulletRect = {10 + i * (bulletWidth + spacing), 10, bulletWidth, bulletHeight};
         SDL_RenderCopy(renderer, bulletTexture, nullptr, &bulletRect);
     }
 }
@@ -306,15 +231,6 @@ void freeDuckFrames() {
 void spawnDuck(SDL_Rect& duckRect) {
     duckRect.x = rand() % (SCREEN_WIDTH - DUCK_WIDTH);
     duckRect.y = DUCK_SPAWN_Y;
-}
-void checkGameOver(SDL_Renderer* renderer) {
-    if (bulletsLeft <= 0 && duckState != FALLING) {
-        // Display a "Game Over" message box
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Game Over", "You are out of bullets and missed the duck!", nullptr);
-        
-        // Set the `quit` flag to true to exit the game loop
-        exit(0);
-    }
 }
 
 // Update duck animation frame
@@ -346,6 +262,12 @@ void drawCrosshair(SDL_Renderer* renderer, int x, int y) {
     SDL_RenderDrawLine(renderer, x - CROSSHAIR_SIZE, y, x + CROSSHAIR_SIZE, y);
     // Draw vertical line
     SDL_RenderDrawLine(renderer, x, y - CROSSHAIR_SIZE, x, y + CROSSHAIR_SIZE);
+}
+// Function to draw text on the screen (for score, level, and bullets)
+void drawText(SDL_Renderer* renderer, const string& text, int x, int y, SDL_Color color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_Rect rect = {x, y, static_cast<int>(text.size() * 10), 30};
+    SDL_RenderFillRect(renderer, &rect);
 }
 
 // Function to draw the game statistics
@@ -383,11 +305,6 @@ int main(int argc, char* args[]) {
         SDL_DestroyWindow(window);
         IMG_Quit();
         SDL_Quit();
-        return -1;
-    }
-      bulletTexture = IMG_LoadTexture(renderer, "bullet.png");
-    if (bulletTexture == nullptr) {
-        std::cerr << "Không thể tải hình ảnh viên đạn. Lỗi SDL_image: " << IMG_GetError() << std::endl;
         return -1;
     }
 
@@ -452,11 +369,14 @@ while (!quit) {
             crosshairY = e.motion.y;
         } 
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-                // Khi nhấn phím ESC, mở menu tạm dừng
-                if (!showPauseMenu(renderer)) {
-                    quit = true; // Thoát trò chơi nếu chọn "Back to Menu"
-                }
+        // Khi nhấn phím ESC, mở menu tạm dừng
+        bool continueGame = showPauseMenu(renderer);
+        if (!continueGame) {
+            // Quay lại menu chính nếu người chơi chọn "Exit"
+            inGame = false;
+            quit = true;
             }
+        }
         else if (e.type == SDL_MOUSEBUTTONDOWN && bulletsLeft > 0 && duckState != FALLING) {
             bulletsLeft--; // Giảm số đạn khi bắn
             // Kiểm tra nếu người chơi bắn trúng con vịt
@@ -466,7 +386,7 @@ while (!quit) {
                 currentFrame = 7;
                 popStartTime = SDL_GetTicks();
                 duckHit = true;
-                
+                bulletsLeft = 3; // Khởi động lại số đạn khi bắn trúng
             }
         }
         else if (e.type == SDL_MOUSEBUTTONDOWN && duckState != FALLING) {
@@ -478,12 +398,13 @@ while (!quit) {
             }
         }
     }
+
+    updateDuckFrame();
+ // Kiểm tra nếu hết đạn mà không bắn trúng con vịt
     if (bulletsLeft == 0 && !duckHit) {
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Game Over", "You're out of bullets!", nullptr);
             quit = true;
     }
-    updateDuckFrame();
- // Kiểm tra nếu hết đạn mà không bắn trúng con vịt
     if (duckState == POP) {
         if (SDL_GetTicks() - popStartTime > 500) {
             duckState = FALLING;
@@ -495,8 +416,6 @@ while (!quit) {
             duckState = FLYING_HORIZONTAL;
             spawnDuck(duckRect);
             currentFrame = 1;
-            duckHit = false;
-            bulletsLeft =3;
         }
     } else {
         duckRect.x += duckSpeedX;
@@ -514,11 +433,9 @@ while (!quit) {
     SDL_RenderCopy(renderer, backgroundTexture, nullptr, nullptr);
     SDL_RenderCopyEx(renderer, duckFrames[currentFrame], nullptr, &duckRect, 0, nullptr, flip);
     SDL_RenderCopy(renderer, foregroundTexture, nullptr, nullptr);
-// **Đoạn mã vẽ viên đạn đặt tại đây**
-    
+
     // Draw the crosshair at the current mouse position
     drawCrosshair(renderer, crosshairX, crosshairY);
-    drawBullets(renderer, bulletsLeft);
 
     SDL_RenderPresent(renderer);
     SDL_Delay(16);
