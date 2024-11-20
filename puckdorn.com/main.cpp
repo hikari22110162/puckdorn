@@ -274,13 +274,25 @@ void loadDuckFrames(SDL_Renderer* renderer) {
         duckFrames[i] = loadTexture(path, renderer);
     }
 }
-void drawBullets(SDL_Renderer* renderer, SDL_Texture* bulletTexture, int bulletsLeft) {
-    const int bulletWidth = 30;      // Chiều rộng biểu tượng đạn
-    const int bulletHeight = 30;     // Chiều cao biểu tượng đạn
-    const int spacing = 5;           // Khoảng cách giữa các viên đạn
+SDL_Texture* bulletTexture = nullptr; // Biến toàn cục lưu texture của viên đạn
 
+// Hàm để vẽ các viên đạn trong HUD
+void drawBullets(SDL_Renderer* renderer, int bulletsLeft) {
+    int bulletWidth = 10;  // Chiều rộng của viên đạn
+    int bulletHeight = 15; // Chiều cao của viên đạn
+    int frameX = 150;       // Tọa độ X của khung
+    int frameY = SCREEN_HEIGHT - 100; // Tọa độ Y của khung
+    int frameWidth = 150;  // Chiều rộng của khung
+    int frameHeight = 50;  // Chiều cao của khung
+
+    // Tính toán vị trí bắt đầu để căn giữa các viên đạn trong khung
+    int bulletsTotalWidth = bulletsLeft * bulletWidth + (bulletsLeft - 1) * 5; // Tổng chiều rộng các viên đạn
+    int startX = frameX + (frameWidth - bulletsTotalWidth) / 2; // Căn giữa theo chiều ngang
+    int startY = frameY + (frameHeight - bulletHeight) / 2;     // Căn giữa theo chiều dọc
+
+    // Vẽ từng viên đạn
     for (int i = 0; i < bulletsLeft; ++i) {
-        SDL_Rect bulletRect = {10 + i * (bulletWidth + spacing), 10, bulletWidth, bulletHeight};
+        SDL_Rect bulletRect = {startX + (i * (bulletWidth + 5)), startY, bulletWidth, bulletHeight};
         SDL_RenderCopy(renderer, bulletTexture, nullptr, &bulletRect);
     }
 }
@@ -371,6 +383,11 @@ int main(int argc, char* args[]) {
         SDL_DestroyWindow(window);
         IMG_Quit();
         SDL_Quit();
+        return -1;
+    }
+      bulletTexture = IMG_LoadTexture(renderer, "bullet.png");
+    if (bulletTexture == nullptr) {
+        std::cerr << "Không thể tải hình ảnh viên đạn. Lỗi SDL_image: " << IMG_GetError() << std::endl;
         return -1;
     }
 
@@ -497,9 +514,11 @@ while (!quit) {
     SDL_RenderCopy(renderer, backgroundTexture, nullptr, nullptr);
     SDL_RenderCopyEx(renderer, duckFrames[currentFrame], nullptr, &duckRect, 0, nullptr, flip);
     SDL_RenderCopy(renderer, foregroundTexture, nullptr, nullptr);
-
+// **Đoạn mã vẽ viên đạn đặt tại đây**
+    
     // Draw the crosshair at the current mouse position
     drawCrosshair(renderer, crosshairX, crosshairY);
+    drawBullets(renderer, bulletsLeft);
 
     SDL_RenderPresent(renderer);
     SDL_Delay(16);
