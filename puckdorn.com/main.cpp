@@ -69,14 +69,14 @@ SDL_Texture* loadTexture(const string& path, SDL_Renderer* renderer);
 
 // Hàm tải hình ảnh biểu tượng đạn
 SDL_Texture* loadBulletIcon(SDL_Renderer* renderer) {
-    return loadTexture("puckdorn.com/bullet.png", renderer);
+    return loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/puckdorn.com/bullet.png", renderer);
 }
 // Hàm hiển thị menu
 bool showMainMenu(SDL_Renderer* renderer) {
     // Tải hình ảnh nền cho menu
     SDL_ShowCursor(SDL_ENABLE);
 
-    SDL_Texture* menuBackground = loadTexture("puckdorn.com/main_menu_background.png", renderer);
+    SDL_Texture* menuBackground = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/puckdorn.com/main_menu_background.png", renderer);
     if (menuBackground == nullptr) {
         cerr << "Failed to load menu background.\n";
         return false;
