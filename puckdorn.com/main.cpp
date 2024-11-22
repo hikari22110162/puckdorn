@@ -169,7 +169,7 @@ bool showMainMenu(SDL_Renderer* renderer) {
     // Tải hình ảnh nền cho menu
     SDL_ShowCursor(SDL_ENABLE);
 
-    SDL_Texture* menuBackground = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/main_menu_background.png", renderer);
+    SDL_Texture* menuBackground = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/main_menu_background.png", renderer);
     if (menuBackground == nullptr) {
         cerr << "Failed to load menu background.\n";
         return false;
@@ -217,11 +217,11 @@ bool showPauseMenu(SDL_Renderer* renderer) {
     SDL_ShowCursor(SDL_ENABLE); // Hiển thị con trỏ chuột khi ở menu tạm dừng
 
     // Tải hình ảnh cho nút "Continue" và "Exit"
-    SDL_Texture* continueButton = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/Continue.png", renderer);
-    SDL_Texture* settingsButton = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/Settings.png", renderer);
-    SDL_Texture* exitButton = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/Exit.png", renderer);
-    SDL_Texture* logo = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/Logo.png", renderer);
-    SDL_Texture* titile = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/Pause_titile.png", renderer);
+    SDL_Texture* continueButton = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/Continue.png", renderer);
+    SDL_Texture* settingsButton = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/Settings.png", renderer);
+    SDL_Texture* exitButton = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/Exit.png", renderer);
+    SDL_Texture* logo = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/Logo.png", renderer);
+    SDL_Texture* titile = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/Pause_titile.png", renderer);
 
     if (!continueButton || !exitButton) {
         SDL_Log("Failed to load button images.");
@@ -308,7 +308,7 @@ bool showPauseMenu(SDL_Renderer* renderer) {
 void loadDuckFrames(SDL_Renderer* renderer) {
     for (int i = 1; i <= DUCK_FRAMES; ++i) {
 
-        string path = "C:/Users/bebiu/Desktop/puckdorn.com/frame" + to_string(i) + ".png";
+        string path = "C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/frame" + to_string(i) + ".png";
         duckFrames[i] = loadTexture(path, renderer);
     }
 }
@@ -399,34 +399,34 @@ void drawCrosshair(SDL_Renderer* renderer, int x, int y) {
 // Function to draw the game statistics
 void drawStats(SDL_Renderer* renderer, SDL_Texture* scoreTexture, SDL_Texture* levelTexture, SDL_Texture* digitsTextures[]) {
     // Adjust the position for the score
-    SDL_Rect scoreRect = {500, SCREEN_HEIGHT - 80, 70, 20}; // Position the score label in the green box
+    SDL_Rect scoreRect = {530, SCREEN_HEIGHT - 83, 60, 20}; // Position the score label in the green box
     SDL_RenderCopy(renderer, scoreTexture, nullptr, &scoreRect);
 
     // Render the score value (digit by digit)
-    int scoreX = 130; // Starting X position for score digits (relative to the green box)
-    int scoreY = SCREEN_HEIGHT - 80; // Adjust Y position for the green box
+    int scoreX = 578; // Starting X position for score digits (relative to the green box)
+    int scoreY = SCREEN_HEIGHT - 60; // Adjust Y position for the green box
     int scoreCopy = score; // Temporary variable to process digits
     do {
         int digit = scoreCopy % 10;
         scoreCopy /= 10;
 
-        SDL_Rect digitRect = {scoreX, scoreY, 20, 30}; // Each digit's size
+        SDL_Rect digitRect = {scoreX, scoreY, 15, 20}; // Each digit's size
         SDL_RenderCopy(renderer, digitsTextures[digit], nullptr, &digitRect);
-        scoreX -= 25; // Move left for the next digit
+        scoreX -= 15; // Move left for the next digit
     } while (scoreCopy > 0);
 
     // Render the level label (unchanged position)
-    SDL_Rect levelRect = {10, 50, 100, 30};
+    SDL_Rect levelRect = {202, SCREEN_HEIGHT- 119, 26, 19};
     SDL_RenderCopy(renderer, levelTexture, nullptr, &levelRect);
 
     // Render the level value (digit by digit, unchanged position)
-    int levelX = 120; // Starting X for level digits
+    int levelX = 229; // Starting X for level digits
     int levelCopy = level;
     do {
         int digit = levelCopy % 10;
         levelCopy /= 10;
 
-        SDL_Rect digitRect = {levelX, 50, 20, 30}; // Each digit's size
+        SDL_Rect digitRect = {levelX,SCREEN_HEIGHT-119 , 20, 19}; // Each digit's size
         SDL_RenderCopy(renderer, digitsTextures[digit], nullptr, &digitRect);
         levelX -= 25; // Move left for the next digit
     } while (levelCopy > 0);
@@ -487,8 +487,8 @@ int main(int argc, char* args[]) {
     // Tải tài nguyên hình ảnh
     
     loadDuckFrames(renderer);
-    SDL_Texture* backgroundTexture = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/background.png", renderer);
-    SDL_Texture* foregroundTexture = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/foreground.png", renderer);
+    SDL_Texture* backgroundTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/background.png", renderer);
+    SDL_Texture* foregroundTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/foreground.png", renderer);
     SDL_Texture* bulletTexture = loadBulletIcon(renderer);
     if (bulletTexture == nullptr) {
     cerr << "Failed to load bullet icon.\n";
@@ -566,7 +566,8 @@ while (!quit) {
                 duckHit = true;
                 score += 10; // Add points for a successful hit
             } else {
-                score -= 2; // Deduct points for a missed shot
+                if (score >0)
+                    score -= 2; // Deduct points for a missed shot
             }
         }
     }
