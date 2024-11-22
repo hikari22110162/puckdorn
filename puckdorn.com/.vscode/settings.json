@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "*.embeddedhtml": "html",
-        "random": "cpp"
+        "random": "cpp",
+        "iostream": "cpp",
+        "string_view": "cpp"
     }
 }

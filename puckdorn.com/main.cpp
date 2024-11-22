@@ -397,10 +397,41 @@ void drawCrosshair(SDL_Renderer* renderer, int x, int y) {
 }
 
 // Function to draw the game statistics
-void drawStats(SDL_Renderer* renderer) {
-    drawText(renderer, "Score: " + to_string(score), 10, 10, {255, 255, 0, 255});
-    drawText(renderer, "Level: " + to_string(level), 10, 40, {255, 255, 0, 255});
-    drawText(renderer, "Bullets: " + to_string(bulletsLeft), 10, 70, {255, 255, 0, 255});
+void drawStats(SDL_Renderer* renderer, SDL_Texture* scoreTexture, SDL_Texture* levelTexture, SDL_Texture* digitsTextures[]) {
+    // Adjust the position for the score
+    SDL_Rect scoreRect = {500, SCREEN_HEIGHT - 80, 70, 20}; // Position the score label in the green box
+    SDL_RenderCopy(renderer, scoreTexture, nullptr, &scoreRect);
+
+    // Render the score value (digit by digit)
+    int scoreX = 130; // Starting X position for score digits (relative to the green box)
+    int scoreY = SCREEN_HEIGHT - 80; // Adjust Y position for the green box
+    int scoreCopy = score; // Temporary variable to process digits
+    do {
+        int digit = scoreCopy % 10;
+        scoreCopy /= 10;
+
+        SDL_Rect digitRect = {scoreX, scoreY, 20, 30}; // Each digit's size
+        SDL_RenderCopy(renderer, digitsTextures[digit], nullptr, &digitRect);
+        scoreX -= 25; // Move left for the next digit
+    } while (scoreCopy > 0);
+
+    // Render the level label (unchanged position)
+    SDL_Rect levelRect = {10, 50, 100, 30};
+    SDL_RenderCopy(renderer, levelTexture, nullptr, &levelRect);
+
+    // Render the level value (digit by digit, unchanged position)
+    int levelX = 120; // Starting X for level digits
+    int levelCopy = level;
+    do {
+        int digit = levelCopy % 10;
+        levelCopy /= 10;
+
+        SDL_Rect digitRect = {levelX, 50, 20, 30}; // Each digit's size
+        SDL_RenderCopy(renderer, digitsTextures[digit], nullptr, &digitRect);
+        levelX -= 25; // Move left for the next digit
+    } while (levelCopy > 0);
+
+    // Render the bullet icon and the number of bullets (unchanged position)
 }
 
 
@@ -433,8 +464,28 @@ int main(int argc, char* args[]) {
         SDL_Quit();
         return -1;
     }
+      // Load textures during initialization
+    SDL_Texture* scoreTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/ui_score.png", renderer);
+    SDL_Texture* levelTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/ui_round.png", renderer);
+    // Load digit textures (0–9)
+    SDL_Texture* digitsTextures[10];
+    for (int i = 0; i < 10; ++i) {
+        digitsTextures[i] = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/numero" + to_string(i) + ".png", renderer);
+    }
 
+    // Check for any failed texture loading
+    if (!scoreTexture || !levelTexture) {
+        cerr << "Failed to load a required texture!" << endl;
+    // Handle the error appropriately (e.g., exit program)
+    }
+    for (int i = 0; i < 10; ++i) {
+        if (!digitsTextures[i]) {
+            cerr << "Failed to load digit texture for " << i << endl;
+        // Handle the error appropriately
+        }
+    }  
     // Tải tài nguyên hình ảnh
+    
     loadDuckFrames(renderer);
     SDL_Texture* backgroundTexture = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/background.png", renderer);
     SDL_Texture* foregroundTexture = loadTexture("C:/Users/bebiu/Desktop/puckdorn.com/foreground.png", renderer);
@@ -495,42 +546,38 @@ while (!quit) {
             crosshairY = e.motion.y;
         } 
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-        // Khi nhấn phím ESC, mở menu tạm dừng
-        bool continueGame = showPauseMenu(renderer);
-        if (!continueGame) {
-            // Quay lại menu chính nếu người chơi chọn "Exit"
-            inGame = false;
-            quit = true;
+            // Open pause menu when ESC is pressed
+            bool continueGame = showPauseMenu(renderer);
+            if (!continueGame) {
+                // Exit to main menu if the player chooses "Exit"
+                inGame = false;
+                quit = true;
             }
         }
         else if (e.type == SDL_MOUSEBUTTONDOWN && bulletsLeft > 0 && duckState != FALLING) {
-            bulletsLeft--; // Giảm số đạn khi bắn
-            // Kiểm tra nếu người chơi bắn trúng con vịt
+            bulletsLeft--; // Decrease bullets on every shot
+
+            // Check if the player hits the duck
             if (crosshairX >= duckRect.x && crosshairX <= duckRect.x + DUCK_WIDTH &&
                 crosshairY >= duckRect.y && crosshairY <= duckRect.y + DUCK_HEIGHT) {
                 duckState = POP;
                 currentFrame = 7;
                 popStartTime = SDL_GetTicks();
                 duckHit = true;
-                
-            }
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && duckState != FALLING) {
-            if (crosshairX >= duckRect.x && crosshairX <= duckRect.x + DUCK_WIDTH &&
-                crosshairY >= duckRect.y && crosshairY <= duckRect.y + DUCK_HEIGHT) {
-                duckState = POP;
-                currentFrame = 7;
-                popStartTime = SDL_GetTicks();
+                score += 10; // Add points for a successful hit
+            } else {
+                score -= 2; // Deduct points for a missed shot
             }
         }
     }
-    if (bulletsLeft == 0 && !duckHit) {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Game Over", "You're out of bullets!", nullptr);
-            quit = true;
-    }
-    updateDuckFrame();
- // Kiểm tra nếu hết đạn mà không bắn trúng con vịt
 
+    // Check for game over condition if bullets are out and duck not hit
+    if (bulletsLeft == 0 && !duckHit) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Game Over", "You're out of bullets!", nullptr);
+        quit = true;
+    }
+
+    // Update duck state and handle animations
     if (duckState == POP) {
         if (SDL_GetTicks() - popStartTime > 500) {
             duckState = FALLING;
@@ -543,50 +590,51 @@ while (!quit) {
             spawnDuck(duckRect);
             currentFrame = 1;
             duckHit = false;
-            bulletsLeft =3;
+
+            // Reset bullets for the new duck
+            bulletsLeft = 3;
+
+            // Level progression
+            if (++level % 5 == 0) { // Increase difficulty every 5 ducks
+                duckSpeedMultiplier += 0.1f; // Gradually increase speed
+                duckSpeedX = BASE_SPEED * duckSpeedMultiplier;
+                duckSpeedY = BASE_SPEED * duckSpeedMultiplier;
+                bulletsLeft = max(1, bulletsLeft - 1); // Reduce bullets (minimum 1)
+            }
         }
-    
-    } else if (duckState == FLYING_UPWARDS ) {
+    } else if (duckState == FLYING_UPWARDS || duckState == FLYING_DOWN) {
         duckRect.x += duckSpeedX;
         duckRect.y -= duckSpeedY;
 
         if (duckRect.x > SCREEN_WIDTH - DUCK_WIDTH || duckRect.x < 0) duckSpeedX = -duckSpeedX;
         if (duckRect.y < 0 || duckRect.y > DUCK_SPAWN_Y) {
             duckSpeedY = -duckSpeedY;
-            duckState = FLYING_DOWN;
+            duckState = (duckState == FLYING_UPWARDS) ? FLYING_DOWN : FLYING_UPWARDS;
         }
-
-    } else if (duckState == FLYING_DOWN) {
-        duckRect.x += duckSpeedX;
-        duckRect.y -= duckSpeedY;
-
-        if (duckRect.x > SCREEN_WIDTH - DUCK_WIDTH || duckRect.x < 0) duckSpeedX = -duckSpeedX;
-        if (duckRect.y < 0 || duckRect.y > DUCK_SPAWN_Y) {
-            duckSpeedY = -duckSpeedY;
-            duckState = FLYING_UPWARDS;
-        }
-
     }
-    SDL_RendererFlip flip = (duckSpeedX < 0) ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+
+    // Update animation frame
+    updateDuckFrame();
 
     // Render everything
     SDL_SetRenderDrawColor(renderer, 135, 206, 250, 255);
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, backgroundTexture, nullptr, nullptr);
-    SDL_RenderCopyEx(renderer, duckFrames[currentFrame], nullptr, &duckRect, 0, nullptr, flip);
+    SDL_RenderCopyEx(renderer, duckFrames[currentFrame], nullptr, &duckRect, 0, nullptr, (duckSpeedX < 0) ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
     SDL_RenderCopy(renderer, foregroundTexture, nullptr, nullptr);
     drawBullets(renderer, bulletsLeft);
+
+    // Draw the stats (score, level, bullets)
+    drawStats(renderer, scoreTexture, levelTexture, digitsTextures);
 
     // Draw the crosshair at the current mouse position
     drawCrosshair(renderer, crosshairX, crosshairY);
 
     SDL_RenderPresent(renderer);
     SDL_Delay(16);
-
 }
 
-
-    // Dọn dẹp tài nguyên trước khi thoát
+// Cleanup resources before exiting
 freeDuckFrames();
 SDL_DestroyTexture(bulletTexture);
 SDL_DestroyTexture(backgroundTexture);
@@ -596,5 +644,5 @@ SDL_DestroyWindow(window);
 IMG_Quit();
 SDL_Quit();
 
-    return 0;
+return 0;
 }
