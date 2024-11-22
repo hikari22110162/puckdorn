@@ -72,7 +72,7 @@ SDL_Texture* loadTexture(const string& path, SDL_Renderer* renderer);
 
 // Hàm tải hình ảnh biểu tượng đạn
 SDL_Texture* loadBulletIcon(SDL_Renderer* renderer) {
-    return loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/bullet.png", renderer);
+    return loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/bullet.png", renderer);
 }
 void drawText(SDL_Renderer* renderer, const string& text, int x, int y, SDL_Color color) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
@@ -169,7 +169,11 @@ bool showMainMenu(SDL_Renderer* renderer) {
     // Tải hình ảnh nền cho menu
     SDL_ShowCursor(SDL_ENABLE);
 
+<<<<<<< HEAD
     SDL_Texture* menuBackground = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/main_menu_background.png", renderer);
+=======
+    SDL_Texture* menuBackground = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/main_menu_background.png", renderer);
+>>>>>>> 3d4c14fa76a6e4b32758a754a5d949d420b604f3
     if (menuBackground == nullptr) {
         cerr << "Failed to load menu background.\n";
         return false;
@@ -217,11 +221,19 @@ bool showPauseMenu(SDL_Renderer* renderer) {
     SDL_ShowCursor(SDL_ENABLE); // Hiển thị con trỏ chuột khi ở menu tạm dừng
 
     // Tải hình ảnh cho nút "Continue" và "Exit"
+<<<<<<< HEAD
     SDL_Texture* continueButton = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/Continue.png", renderer);
     SDL_Texture* settingsButton = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/Settings.png", renderer);
     SDL_Texture* exitButton = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/Exit.png", renderer);
     SDL_Texture* logo = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/Logo.png", renderer);
     SDL_Texture* titile = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/Pause_titile.png", renderer);
+=======
+    SDL_Texture* continueButton = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/Continue.png", renderer);
+    SDL_Texture* settingsButton = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/Settings.png", renderer);
+    SDL_Texture* exitButton = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/Exit.png", renderer);
+    SDL_Texture* logo = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/Logo.png", renderer);
+    SDL_Texture* titile = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/Pause_titile.png", renderer);
+>>>>>>> 3d4c14fa76a6e4b32758a754a5d949d420b604f3
 
     if (!continueButton || !exitButton) {
         SDL_Log("Failed to load button images.");
@@ -308,14 +320,18 @@ bool showPauseMenu(SDL_Renderer* renderer) {
 void loadDuckFrames(SDL_Renderer* renderer) {
     for (int i = 1; i <= DUCK_FRAMES; ++i) {
 
+<<<<<<< HEAD
         string path = "C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/frame" + to_string(i) + ".png";
+=======
+        string path = "C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/frame" + to_string(i) + ".png";
+>>>>>>> 3d4c14fa76a6e4b32758a754a5d949d420b604f3
         duckFrames[i] = loadTexture(path, renderer);
     }
 }
 void drawBullets(SDL_Renderer* renderer, int bulletsLeft) {
 
-    SDL_Texture* bulletTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/bullet.png", renderer);
-    SDL_Texture* shot = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/ui_shot.png", renderer);
+    SDL_Texture* bulletTexture = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/bullet.png", renderer);
+    SDL_Texture* shot = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/ui_shot.png", renderer);
 
     SDL_Rect shotRect = {206, SCREEN_HEIGHT - 62, 40, 20};
     SDL_RenderCopy(renderer, shot, nullptr, &shotRect);
@@ -465,12 +481,12 @@ int main(int argc, char* args[]) {
         return -1;
     }
       // Load textures during initialization
-    SDL_Texture* scoreTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/ui_score.png", renderer);
-    SDL_Texture* levelTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/ui_round.png", renderer);
+    SDL_Texture* scoreTexture = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/ui_score.png", renderer);
+    SDL_Texture* levelTexture = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/ui_round.png", renderer);
     // Load digit textures (0–9)
     SDL_Texture* digitsTextures[10];
     for (int i = 0; i < 10; ++i) {
-        digitsTextures[i] = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/numero" + to_string(i) + ".png", renderer);
+        digitsTextures[i] = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/numero" + to_string(i) + ".png", renderer);
     }
 
     // Check for any failed texture loading
@@ -487,8 +503,13 @@ int main(int argc, char* args[]) {
     // Tải tài nguyên hình ảnh
     
     loadDuckFrames(renderer);
+<<<<<<< HEAD
     SDL_Texture* backgroundTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/background.png", renderer);
     SDL_Texture* foregroundTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/foreground.png", renderer);
+=======
+    SDL_Texture* backgroundTexture = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/background.png", renderer);
+    SDL_Texture* foregroundTexture = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/foreground.png", renderer);
+>>>>>>> 3d4c14fa76a6e4b32758a754a5d949d420b604f3
     SDL_Texture* bulletTexture = loadBulletIcon(renderer);
     if (bulletTexture == nullptr) {
     cerr << "Failed to load bullet icon.\n";
