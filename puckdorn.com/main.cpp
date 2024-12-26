@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_image.h>
 #include <iostream>
 #include <cstdlib>
@@ -72,7 +73,7 @@ SDL_Texture* loadTexture(const string& path, SDL_Renderer* renderer);
 
 // Hàm tải hình ảnh biểu tượng đạn
 SDL_Texture* loadBulletIcon(SDL_Renderer* renderer) {
-    return loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/bullet.png", renderer);
+    return loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/bullet.png", renderer);
 }
 void drawText(SDL_Renderer* renderer, const string& text, int x, int y, SDL_Color color) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
@@ -237,7 +238,6 @@ bool showPauseMenu(SDL_Renderer* renderer) {
     SDL_Event e;
     bool inPauseMenu = true;
     int selectedOption = -1;
-
     while (inPauseMenu) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) return false;
@@ -303,6 +303,49 @@ bool showPauseMenu(SDL_Renderer* renderer) {
 
     return (selectedOption == 1); // Trả về true nếu chọn "Continue", false nếu chọn "Exit"/
 }
+bool showPlayAgainMenu(SDL_Renderer* renderer) {
+    SDL_ShowCursor(SDL_ENABLE); // Hiển thị con trỏ chuột khi ở menu tạm dừng
+    SDL_Texture* exitButton = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/Exit.png", renderer);
+    SDL_Texture* playAgainButton = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/playAgain.png", renderer);
+    if (!playAgainButton || !exitButton) {
+        SDL_Log("Failed to load button images.");
+        return false;
+    }
+    SDL_Rect playAgainRect = {350, 319, 87, 13}; // Vị trí và kích thước nút "Continue"s
+    SDL_Rect exitRect = {372, 298, 42, 13};
+
+    SDL_Event e;
+    bool inPlayAgainMenu = true;
+    while (inPlayAgainMenu) {
+        while (SDL_PollEvent(&e) != 0) {
+            if (e.type == SDL_QUIT) return false;
+            if (e.type == SDL_MOUSEBUTTONDOWN) {
+                int mouseX = e.button.x;
+                int mouseY = e.button.y;
+
+                // Kiểm tra nếu nhấn vào "Continue"
+                if (mouseX >= playAgainRect.x && mouseX <= playAgainRect.x + playAgainRect.w &&
+                    mouseY >= playAgainRect.y && mouseY <= playAgainRect.y + playAgainRect.h) {
+                    selectedOption = 1;
+                    inPlayAgainMenu = false;
+                }
+
+                // Kiểm tra nếu nhấn vào "Exit"
+                if (mouseX >= exitRect.x && mouseX <= exitRect.x + exitRect.w &&
+                    mouseY >= exitRect.y && mouseY <= exitRect.y + exitRect.h) {
+                    selectedOption = 2;
+                    inPlayAgainMenu = false;
+                    }
+            }
+        }
+    }
+    SDL_DestroyTexture(playAgainButton);
+    SDL_DestroyTexture(exitButton);
+
+    SDL_ShowCursor(SDL_DISABLE); // Ẩn con trỏ khi quay lại trò chơi
+
+    return (selectedOption == 1); // Trả về true nếu chọn "inPlayAgainMenu", false nếu chọn "Exit"/
+}
 // Load duck animation frames
 void loadDuckFrames(SDL_Renderer* renderer) {
     for (int i = 1; i <= DUCK_FRAMES; ++i) {
@@ -313,8 +356,8 @@ void loadDuckFrames(SDL_Renderer* renderer) {
 }
 void drawBullets(SDL_Renderer* renderer, int bulletsLeft) {
 
-    SDL_Texture* bulletTexture = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/bullet.png", renderer);
-    SDL_Texture* shot = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/ui_shot.png", renderer);
+    SDL_Texture* bulletTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/bullet.png", renderer);
+    SDL_Texture* shot = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/ui_shot.png", renderer);
 
     SDL_Rect shotRect = {206, SCREEN_HEIGHT - 62, 40, 20};
     SDL_RenderCopy(renderer, shot, nullptr, &shotRect);
@@ -354,13 +397,43 @@ void spawnDuck(SDL_Rect& duckRect) {
     duckRect.x = rand() % (SCREEN_WIDTH - DUCK_WIDTH);
     duckRect.y = DUCK_SPAWN_Y;
 }
-void checkGameOver(SDL_Renderer* renderer) {
-    if (bulletsLeft <= 0 && duckState != FALLING) {
-        // Display a "Game Over" message box
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Game Over", "You are out of bullets and missed the duck!", nullptr);
-        
-        // Set the quit flag to true to exit the game loop
-        exit(0);
+void resetGame(SDL_Rect& duckRect) {
+    score = 0;
+    level = 1;
+    bulletsLeft = 3;
+    duckState = FLYING_UPWARDS;
+    spawnDuck(duckRect);
+    currentFrame = 1;
+    duckSpeedMultiplier = 1.0f;
+}
+void checkGameOver(SDL_Renderer* renderer, SDL_Rect& duckRect, bool& isGameOver, bool& quit) {
+    if (bulletsLeft <= 0 && duckState != 4) { // FLYING_UPWARDS, FALLING, POP
+        const SDL_MessageBoxButtonData buttons[] = {
+            { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Play Again" },
+            { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "Exit" }
+        };
+        const SDL_MessageBoxData messageboxdata = {
+            SDL_MESSAGEBOX_INFORMATION, 
+            nullptr,
+            "Game Over",
+            "You ran out of bullets! What would you like to do?",
+            SDL_arraysize(buttons),
+            buttons,
+            nullptr
+        };
+
+        int buttonId;
+        if (SDL_ShowMessageBox(&messageboxdata, &buttonId) < 0) {
+            cerr << "Error displaying message box: " << SDL_GetError() << endl;
+            return;
+        }
+
+        if (buttonId == 1) { // "Play Again"
+            resetGame(duckRect);  // Reset game state
+            isGameOver = false;   // Set game over flag to false
+        } else { // "Exit"
+            quit = true; // Set quit flag to true
+        }
     }
 }
 
@@ -464,12 +537,12 @@ int main(int argc, char* args[]) {
         return -1;
     }
       // Load textures during initialization
-    SDL_Texture* scoreTexture = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/ui_score.png", renderer);
-    SDL_Texture* levelTexture = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/ui_round.png", renderer);
+    SDL_Texture* scoreTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/ui_score.png", renderer);
+    SDL_Texture* levelTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/ui_round.png", renderer);
     // Load digit textures (0–9)
     SDL_Texture* digitsTextures[10];
     for (int i = 0; i < 10; ++i) {
-        digitsTextures[i] = loadTexture("C:/Users/HP PAVILION/Desktop/puckdorn/puckdorn.com/numero" + to_string(i) + ".png", renderer);
+        digitsTextures[i] = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/numero" + to_string(i) + ".png", renderer);
     }
 
     // Check for any failed texture loading
@@ -537,6 +610,8 @@ int main(int argc, char* args[]) {
     bool quit = false;
     SDL_Event e;
 // Game loop
+bool isGameOver = false;
+bool playAgain = false;
 while (!quit) {
     while (SDL_PollEvent(&e) != 0) {
         if (e.type == SDL_QUIT) quit = true;
@@ -565,7 +640,7 @@ while (!quit) {
                 duckHit = true;
                 score += 10; // Add points for a successful hit
             } else {
-                if (score >0)
+                if (score > 0)
                     score -= 2; // Deduct points for a missed shot
             }
         }
@@ -574,7 +649,12 @@ while (!quit) {
     // Check for game over condition if bullets are out and duck not hit
     if (bulletsLeft == 0 && !duckHit) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Game Over", "You're out of bullets!", nullptr);
-        quit = true;
+        isGameOver = true; // Set the game over flag
+    }
+
+    if (isGameOver) {
+              checkGameOver(renderer, duckRect, isGameOver, quit);  // Gọi hàm và truyền tham số quit
+
     }
 
     // Update duck state and handle animations
@@ -615,6 +695,7 @@ while (!quit) {
 
     // Update animation frame
     updateDuckFrame();
+    checkGameOver(renderer, duckRect, isGameOver, quit);
 
     // Render everything
     SDL_SetRenderDrawColor(renderer, 135, 206, 250, 255);
