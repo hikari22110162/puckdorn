@@ -29,13 +29,19 @@ const int SCORE_THRESHOLD = 5; // Ducks needed to level up
 int crosshairSize = 15;
 int soundVolume = 50;
 float duckSpeedMultiplier = 1.0f;
+static bool animationFinished = false;
 
 // Animation frames
 const int DUCK_FRAMES = 11;
+const int DOG_FRAMES = 13;
 SDL_Texture* duckFrames[DUCK_FRAMES + 1];
+SDL_Texture* dogFrames[DOG_FRAMES + 1];
 int currentFrame = 1;
+int frame;
 int frameDelay = 100;
+int dogframeDelay = 100;
 Uint32 lastFrameTime = 0;
+Uint32 doglastFrameTime = 0;
 int bulletslelf =3;
 
 // Duck states
@@ -354,6 +360,15 @@ void loadDuckFrames(SDL_Renderer* renderer) {
         duckFrames[i] = loadTexture(path, renderer);
     }
 }
+
+void loadDogFrames(SDL_Renderer* renderer) {
+    for (int i = 1; i <= DOG_FRAMES; ++i) {
+
+        string path = "C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/dogframe" + to_string(i) + ".png";
+        dogFrames[i] = loadTexture(path, renderer);
+    }
+}
+
 void drawBullets(SDL_Renderer* renderer, int bulletsLeft) {
 
     SDL_Texture* bulletTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/bullet.png", renderer);
@@ -393,9 +408,46 @@ void freeDuckFrames() {
         SDL_DestroyTexture(duckFrames[i]);
     }
 }
+
+void freeDogFrames() {
+    for (int i = 1; i <= DOG_FRAMES; ++i) {
+        SDL_DestroyTexture(dogFrames[i]);
+    }
+}
+
+void renderDogFrame(SDL_Renderer* renderer){
+    Uint32 currentTime = SDL_GetTicks();
+    static int dogPositionX = 0;  
+    static int speed = 5;
+
+    if (animationFinished) {
+        return;  // Skip animation rendering if it's finished
+    }
+    if (currentTime - doglastFrameTime > dogframeDelay) {
+        frame++;
+        doglastFrameTime = currentTime;
+        if (frame >= DOG_FRAMES) {
+            animationFinished = true;
+        }
+    }
+
+    dogPositionX += speed;
+    if (frame >=10){speed = 0;}
+    if (dogPositionX > SCREEN_WIDTH) {
+        dogPositionX = -100;  // Reset to the left side if it moves off the screen
+    }
+
+    if (dogFrames[frame]) {
+        SDL_Rect dstRect = { dogPositionX, (SCREEN_HEIGHT) -217, 80, 80 }; // Adjust position and size
+        SDL_RenderCopy(renderer, dogFrames[frame], nullptr, &dstRect);
+    }
+}
+
 void spawnDuck(SDL_Rect& duckRect) {
     duckRect.x = rand() % (SCREEN_WIDTH - DUCK_WIDTH);
     duckRect.y = DUCK_SPAWN_Y;
+    
+    
 }
 void resetGame(SDL_Rect& duckRect) {
     score = 0;
@@ -403,6 +455,7 @@ void resetGame(SDL_Rect& duckRect) {
     bulletsLeft = 3;
     duckState = FLYING_UPWARDS;
     spawnDuck(duckRect);
+    
     currentFrame = 1;
     duckSpeedMultiplier = 1.0f;
 }
@@ -492,15 +545,15 @@ void drawStats(SDL_Renderer* renderer, SDL_Texture* scoreTexture, SDL_Texture* l
     SDL_RenderCopy(renderer, levelTexture, nullptr, &levelRect);
 
     // Render the level value (digit by digit, unchanged position)
-    int levelX = 229; // Starting X for level digits
+    int levelX = 240; // Starting X for level digits
     int levelCopy = level;
     do {
         int digit = levelCopy % 10;
         levelCopy /= 10;
 
-        SDL_Rect digitRect = {levelX,SCREEN_HEIGHT-119 , 20, 19}; // Each digit's size
+        SDL_Rect digitRect = {levelX,SCREEN_HEIGHT-119 , 10, 19}; // Each digit's size
         SDL_RenderCopy(renderer, digitsTextures[digit], nullptr, &digitRect);
-        levelX -= 25; // Move left for the next digit
+        levelX -= 12; // Move left for the next digit
     } while (levelCopy > 0);
 
     // Render the bullet icon and the number of bullets (unchanged position)
@@ -559,6 +612,7 @@ int main(int argc, char* args[]) {
     // Tải tài nguyên hình ảnh
     
     loadDuckFrames(renderer);
+    loadDogFrames(renderer);
     SDL_Texture* backgroundTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/background.png", renderer);
     SDL_Texture* foregroundTexture = loadTexture("C:/Users/bebiu/Documents/GitHub/puckdorn/puckdorn.com/foreground.png", renderer);
     SDL_Texture* bulletTexture = loadBulletIcon(renderer);
@@ -693,6 +747,7 @@ while (!quit) {
         }
     }
 
+    
     // Update animation frame
     updateDuckFrame();
     checkGameOver(renderer, duckRect, isGameOver, quit);
@@ -710,13 +765,15 @@ while (!quit) {
 
     // Draw the crosshair at the current mouse position
     drawCrosshair(renderer, crosshairX, crosshairY);
-
+    loadDogFrames(renderer);
+    renderDogFrame(renderer);
     SDL_RenderPresent(renderer);
     SDL_Delay(16);
 }
 
 // Cleanup resources before exiting
 freeDuckFrames();
+freeDogFrames();
 SDL_DestroyTexture(bulletTexture);
 SDL_DestroyTexture(backgroundTexture);
 SDL_DestroyTexture(foregroundTexture);
